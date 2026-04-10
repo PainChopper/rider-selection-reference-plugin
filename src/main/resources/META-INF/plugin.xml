@@ -1,0 +1,21 @@
+<idea-plugin>
+    <id>com.jetbrainsplagins.ridercopy</id>
+    <name>Rider Copy Format Plugin</name>
+    <vendor email="noreply@example.com">JetBrainsPlagins</vendor>
+
+    <description><![CDATA[
+        Copies selected text with a relative path and line range header.
+    ]]></description>
+
+    <depends>com.intellij.modules.platform</depends>
+
+    <actions>
+        <action id="com.jetbrainsplagins.ridercopy.CopySelectionWithPathAndLinesAction"
+                class="com.jetbrainsplagins.ridercopy.CopySelectionWithPathAndLinesAction"
+                text="Copy Selection with Path and Lines"
+                description="Copy selection as &lt;path&gt;:&lt;start&gt;-&lt;end&gt; plus selected text">
+            <keyboard-shortcut keymap="$default" first-keystroke="ctrl shift alt c"/>
+            <add-to-group group-id="EditorPopupMenu" anchor="last"/>
+        </action>
+    </actions>
+</idea-plugin>
