@@ -14,7 +14,7 @@
                 class="com.jetbrainsplagins.ridercopy.CopySelectionWithPathAndLinesAction"
                 text="Copy Selection with Path and Lines"
                 description="Copy selection as &lt;path&gt;:&lt;start&gt;-&lt;end&gt; plus selected text">
-            <keyboard-shortcut keymap="$default" first-keystroke="ctrl shift alt c"/>
+            <keyboard-shortcut keymap="$default" first-keystroke="ctrl alt shift z"/>
             <add-to-group group-id="EditorPopupMenu" anchor="last"/>
         </action>
     </actions>
