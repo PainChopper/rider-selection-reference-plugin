@@ -1,37 +1,59 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
     id("java")
     id("org.jetbrains.kotlin.jvm") version "2.1.10"
-    id("org.jetbrains.intellij") version "1.17.4"
+    id("org.jetbrains.intellij.platform") version "2.14.0"
 }
 
 group = providers.gradleProperty("pluginGroup").get()
 version = providers.gradleProperty("pluginVersion").get()
 
-repositories {
-    mavenCentral()
+java {
+    toolchain {
+        languageVersion.set(JavaLanguageVersion.of(22))
+    }
 }
 
-intellij {
-    version.set(providers.gradleProperty("platformVersion"))
-    type.set(providers.gradleProperty("platformType"))
-    plugins.set(emptyList())
+kotlin {
+    jvmToolchain(22)
+}
+
+repositories {
+    mavenCentral()
+    intellijPlatform {
+        defaultRepositories()
+    }
+}
+
+dependencies {
+    intellijPlatform {
+        rider(providers.gradleProperty("platformVersion")) {
+            useInstaller = false
+        }
+    }
+}
+
+intellijPlatform {
+    pluginConfiguration {
+        version.set(providers.gradleProperty("pluginVersion"))
+        ideaVersion {
+            sinceBuild.set("261")
+            untilBuild.set("261.*")
+        }
+    }
 }
 
 tasks {
-    patchPluginXml {
-        version.set(providers.gradleProperty("pluginVersion"))
-        sinceBuild.set("243")
-        untilBuild.set("243.*")
-    }
-
     withType<JavaCompile> {
         sourceCompatibility = "17"
         targetCompatibility = "17"
     }
 
     withType<KotlinCompile> {
-        kotlinOptions.jvmTarget = "17"
+        compilerOptions {
+            jvmTarget.set(JvmTarget.JVM_17)
+        }
     }
 }

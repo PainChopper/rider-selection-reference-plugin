@@ -1,10 +1,12 @@
 ﻿# 00_STATE — текущее состояние процесса
 
-NextTicket: T0008
+NextTicket: T0010
 
 ## Active
 - .windsurf/sandbox/MAIL/CODER/IN/T0006_20260410-2314_CODER_change-default-hotkey-and-add-llm-copy-format.md
 - .windsurf/sandbox/MAIL/CODER/IN/T0007_20260410-2324_CODER_fallback-to-plain-copy-when-file-context-unavailable.md
+- .windsurf/sandbox/MAIL/CODER/IN/T0008_20260410-2343_CODER_migrate-build-to-intellij-platform-gradle-plugin-2x.md
+- .windsurf/sandbox/MAIL/CODER/IN/T0009_20260411-1808_CODER_expand-rider-compatibility-to-261-and-refresh-build-versions.md
 
 ## Done
 - .windsurf/sandbox/MAIL/ANALYST/IN/T0002_20260410-0130_ANALYST_specify-rider-plugin-copy-format-bootstrap.md
