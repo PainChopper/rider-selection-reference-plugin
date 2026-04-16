@@ -1,0 +1,276 @@
+package com.jetbrainsplagins.ridercopy
+
+import com.intellij.openapi.actionSystem.AnAction
+import com.intellij.openapi.actionSystem.AnActionEvent
+import com.intellij.openapi.actionSystem.CommonDataKeys
+import com.intellij.openapi.editor.Document
+import com.intellij.openapi.editor.Editor
+import com.intellij.openapi.project.Project
+import com.intellij.openapi.util.TextRange
+import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.psi.PsiManager
+import java.awt.Toolkit
+import java.awt.datatransfer.StringSelection
+import java.nio.file.InvalidPathException
+import java.nio.file.Path
+import java.nio.file.Paths
+import java.util.Locale
+
+class CopySelectionWithPathAndLinesAction : AnAction() {
+
+    override fun update(e: AnActionEvent) {
+        val editor = e.getData(CommonDataKeys.EDITOR)
+        val selectionModel = editor?.selectionModel
+        val hasNonEmptySelection = selectionModel?.hasSelection() == true && !selectionModel.selectedText.isNullOrEmpty()
+        e.presentation.isEnabledAndVisible = hasNonEmptySelection
+    }
+
+    override fun actionPerformed(e: AnActionEvent) {
+        val editor = e.getData(CommonDataKeys.EDITOR) ?: return
+        val selectionModel = editor.selectionModel
+
+        if (!selectionModel.hasSelection()) {
+            return
+        }
+
+        val selectedText = selectionModel.selectedText ?: return
+        if (selectedText.isEmpty()) {
+            return
+        }
+
+        val selectionStartOffset = selectionModel.selectionStart
+        val selectionEndOffset = selectionModel.selectionEnd
+        if (selectionEndOffset <= selectionStartOffset) {
+            return
+        }
+
+        var clipboardPayload = selectedText
+        val project = e.project
+        val virtualFile = e.getData(CommonDataKeys.VIRTUAL_FILE)
+        val isDiffContext = isDiffEditor(editor)
+
+        if (isDiffContext) {
+            clipboardPayload = buildDiffClipboardPayload(
+                editor = editor,
+                selectionStartOffset = selectionStartOffset,
+                selectionEndOffset = selectionEndOffset,
+                project = project,
+                virtualFile = virtualFile
+            ) ?: selectedText
+        }
+
+        if (!isDiffContext && project != null && virtualFile != null && virtualFile.isInLocalFileSystem) {
+            val projectRootPath = try {
+                val basePath = project.basePath
+                if (basePath.isNullOrBlank()) {
+                    null
+                } else {
+                    Paths.get(basePath).toAbsolutePath().normalize()
+                }
+            } catch (_: InvalidPathException) {
+                null
+            }
+
+            val absoluteFilePath = try {
+                Paths.get(virtualFile.path).toAbsolutePath().normalize()
+            } catch (_: InvalidPathException) {
+                null
+            }
+
+            if (projectRootPath != null && absoluteFilePath != null && absoluteFilePath.startsWith(projectRootPath)) {
+                val relativePath = projectRootPath.relativize(absoluteFilePath).toString().replace('\\', '/')
+                if (relativePath.isNotEmpty()) {
+                    val document = editor.document
+                    val lineStart = document.getLineNumber(selectionStartOffset) + 1
+                    val lastIncludedOffset = selectionEndOffset - 1
+                    val lineEnd = document.getLineNumber(lastIncludedOffset) + 1
+
+                    val normalizedSelectedText = selectedText
+                        .replace("\r\n", "\n")
+                        .replace('\r', '\n')
+
+                    val language = detectLanguage(project, virtualFile)
+                    clipboardPayload = buildString {
+                        append("[FILE] ").append(relativePath).append('\n')
+                        append("[LINES] ").append(lineStart).append('-').append(lineEnd).append('\n')
+                        append("[LANG] ").append(language).append('\n')
+                        append("[CODE]").append('\n')
+                        append(normalizedSelectedText).append('\n')
+                        append("[/CODE]")
+                    }
+                }
+            }
+        }
+
+        Toolkit.getDefaultToolkit().systemClipboard.setContents(StringSelection(clipboardPayload), null)
+    }
+
+    private fun detectLanguage(project: Project, virtualFile: VirtualFile): String {
+        val psiFile = PsiManager.getInstance(project).findFile(virtualFile)
+        val ideLanguage = normalizeLangToken(psiFile?.language?.id)
+        if (ideLanguage != null) {
+            return ideLanguage
+        }
+
+        val ideFileType = normalizeLangToken(virtualFile.fileType?.name)
+        if (ideFileType != null) {
+            return ideFileType
+        }
+
+        return "text"
+    }
+
+    private fun normalizeLangToken(raw: String?): String? {
+        if (raw.isNullOrBlank()) {
+            return null
+        }
+
+        val normalized = raw
+            .trim()
+            .lowercase(Locale.ROOT)
+            .replace(Regex("[^a-z0-9]+"), "_")
+            .trim('_')
+
+        if (normalized.isEmpty()) {
+            return null
+        }
+
+        if (normalized == "text" || normalized == "plaintext" || normalized == "plain_text") {
+            return "text"
+        }
+
+        return normalized
+    }
+
+    private fun isDiffEditor(editor: Editor): Boolean {
+        return try {
+            val getter = editor.javaClass.methods.firstOrNull { method ->
+                method.name == "getEditorKind" && method.parameterCount == 0
+            } ?: return false
+
+            getter.invoke(editor)?.toString()?.uppercase(Locale.ROOT) == "DIFF"
+        } catch (_: Throwable) {
+            false
+        }
+    }
+
+    private fun buildDiffClipboardPayload(
+        editor: Editor,
+        selectionStartOffset: Int,
+        selectionEndOffset: Int,
+        project: Project?,
+        virtualFile: VirtualFile?
+    ): String? {
+        val document = editor.document
+        val startLine = document.getLineNumber(selectionStartOffset)
+        val endLine = document.getLineNumber(selectionEndOffset - 1)
+        if (endLine < startLine) {
+            return null
+        }
+
+        val selectedLines = (startLine..endLine).map { lineNumber ->
+            getLineText(document, lineNumber)
+        }
+
+        if (selectedLines.isEmpty() || !selectedLines.all(::isReliableDiffLine)) {
+            return null
+        }
+
+        val diffLines = mutableListOf<String>()
+        val hasHeaderInSelection = selectedLines.any { it.startsWith("@@") }
+        if (!hasHeaderInSelection) {
+            val nearestHeader = findNearestHunkHeader(document, startLine)
+            if (nearestHeader != null) {
+                diffLines.add(nearestHeader)
+            }
+        }
+        diffLines.addAll(selectedLines)
+
+        val diffBody = diffLines.joinToString("\n")
+        if (diffBody.isBlank()) {
+            return null
+        }
+
+        val diffFileLabel = resolveDiffFileLabel(project, virtualFile)
+        return buildString {
+            append("[DIFF_FILE] ").append(diffFileLabel).append('\n')
+            append("[DIFF_RANGE] ").append(startLine + 1).append('-').append(endLine + 1).append('\n')
+            append("[LANG] diff").append('\n')
+            append("[DIFF_FORMAT] unified").append('\n')
+            append("[DIFF]").append('\n')
+            append(diffBody).append('\n')
+            append("[/DIFF]")
+        }
+    }
+
+    private fun isReliableDiffLine(line: String): Boolean {
+        if (line.startsWith("@@")) return true
+        if (line.startsWith("+")) return true
+        if (line.startsWith("-")) return true
+        if (line.startsWith(" ")) return true
+        if (line.startsWith("\\ No newline at end of file")) return true
+        if (line.startsWith("--- ")) return true
+        if (line.startsWith("+++ ")) return true
+        if (line.startsWith("diff --git ")) return true
+        if (line.startsWith("index ")) return true
+        return false
+    }
+
+    private fun findNearestHunkHeader(document: Document, fromLine: Int): String? {
+        for (lineNumber in fromLine downTo 0) {
+            val lineText = getLineText(document, lineNumber)
+            if (lineText.startsWith("@@")) {
+                return lineText
+            }
+        }
+        return null
+    }
+
+    private fun getLineText(document: Document, lineNumber: Int): String {
+        val startOffset = document.getLineStartOffset(lineNumber)
+        val endOffset = document.getLineEndOffset(lineNumber)
+        return document.getText(TextRange(startOffset, endOffset))
+            .replace("\r\n", "\n")
+            .replace('\r', '\n')
+    }
+
+    private fun resolveDiffFileLabel(project: Project?, virtualFile: VirtualFile?): String {
+        if (project != null && virtualFile != null && virtualFile.isInLocalFileSystem) {
+            val projectRootPath = try {
+                val basePath = project.basePath
+                if (basePath.isNullOrBlank()) {
+                    null
+                } else {
+                    Paths.get(basePath).toAbsolutePath().normalize()
+                }
+            } catch (_: InvalidPathException) {
+                null
+            }
+
+            val absoluteFilePath = try {
+                Paths.get(virtualFile.path).toAbsolutePath().normalize()
+            } catch (_: InvalidPathException) {
+                null
+            }
+
+            if (projectRootPath != null && absoluteFilePath != null && absoluteFilePath.startsWith(projectRootPath)) {
+                val relativePath = projectRootPath.relativize(absoluteFilePath).toString().replace('\\', '/')
+                if (relativePath.isNotEmpty()) {
+                    return relativePath
+                }
+            }
+        }
+
+        val path = virtualFile?.path?.replace('\\', '/')
+        if (!path.isNullOrBlank()) {
+            return path
+        }
+
+        val presentableName = virtualFile?.presentableName
+        if (!presentableName.isNullOrBlank()) {
+            return presentableName
+        }
+
+        return "unknown"
+    }
+}
