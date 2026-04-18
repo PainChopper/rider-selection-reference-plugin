@@ -1,6 +1,6 @@
 # 00_STATE — process state
 
-NextTicket: T0023
+NextTicket: T0024
 
 ## Active
 - none
@@ -51,3 +51,5 @@ NextTicket: T0023
 - .agents-runtime/MAIL/CODER/OUT/T0021_20260418-2256_CODER_define-start-process-policy-for-key-process-files_report.md
 - .agents-runtime/MAIL/CODER/IN/T0022_20260418-2321_CODER_define-staging-rules-for-new-project-and-process-files.md
 - .agents-runtime/MAIL/CODER/OUT/T0022_20260418-2321_CODER_define-staging-rules-for-new-project-and-process-files_report.md
+- .agents-runtime/MAIL/CODER/IN/T0023_20260418-2353_CODER_define-one-run-role-override-rule.md
+- .agents-runtime/MAIL/CODER/OUT/T0023_20260418-2353_CODER_define-one-run-role-override-rule_report.md
