@@ -1,20 +1,26 @@
 # 00_COMMON
 
-Общие правила для всех ролей в репозитории `D:\!_DEV_!\JetBrainsPlagins`.
+Общие правила для всех ролей в репозитории `D:\.DEV\JetBrainsPlagins`.
 
 ## Цель репозитория
 
 - В этом репозитории ведётся работа над отдельными JetBrains-плагинами, начиная с Rider-плагина.
-- Все изменения выполняются только внутри `D:\!_DEV_!\JetBrainsPlagins`.
+- Все изменения выполняются только внутри `D:\.DEV\JetBrainsPlagins`.
 - Не изменять файлы вне этого каталога, если это не запрошено отдельно и явно.
 
-## Обязательный порядок
+## Каноническая иерархия и приоритет
 
-1. Сначала прочитать `AGENTS.md`.
-2. Затем прочитать этот файл.
-3. Затем прочитать `.aiassistant/rules/specs/CONTROL_FLOW.md`.
-4. Затем прочитать `.aiassistant/rules/specs/FRONT_BACKEND_CONTRACT.md`.
-5. Если указана роль `@ROLE`, прочитать соответствующий role-файл и работать в его рамках.
+При конфликте приоритет слоёв сверху вниз:
+
+1. live runtime-layer: текущий запрос пользователя, уточнения в треде и активный `MAIL/**`-тикет;
+2. role-layer: активный `@ROLE`-файл;
+3. spec-layer: `.aiassistant/rules/specs/*`;
+4. common-layer: этот файл;
+5. router-layer: `AGENTS.md` только как entrypoint;
+6. helper-layer: `.windsurf/sandbox/TEMPLATES/*` и `.aiassistant/skills/*`;
+7. history-layer: historical `MAIL/**` и superseded process-артефакты.
+
+Правило: helper-layer и history-layer не могут переопределять требования слоёв 1-4.
 
 ## Общие ограничения
 
