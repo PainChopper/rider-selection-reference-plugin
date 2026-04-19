@@ -5,3 +5,4 @@ build/
 # Local/export junk not part of the live repo layer
 .intellijPlatform/
 .kotlin/
+.agents-runtime/RUNLOGS/

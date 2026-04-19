@@ -1,9 +1,9 @@
 # 00_STATE — process state
 
-NextTicket: T0028
+NextTicket: T0031
 
 ## Active
-- none
+- .agents-runtime/MAIL/CODER/IN/T0031_20260419-0454_CODER_implement-human-readable-headings-for-templates-and-rules.md
 
 ## Suspended
 - none
@@ -61,3 +61,9 @@ NextTicket: T0028
 - .agents-runtime/MAIL/ANALYST/OUT/T0026_20260419-0124_ANALYST_specify-icon-for-copy-selection-action_report.md
 - .agents-runtime/MAIL/CODER/IN/T0027_20260419-0147_CODER_add-action-icon-from-owner-svg.md
 - .agents-runtime/MAIL/CODER/OUT/T0027_20260419-0147_CODER_add-action-icon-from-owner-svg_report.md
+- .agents-runtime/MAIL/CODER/IN/T0028_20260419-0429_CODER_remove-role-override-and-role-switch-language-from-rules.md
+- .agents-runtime/MAIL/CODER/OUT/T0028_20260419-0429_CODER_remove-role-override-and-role-switch-language-from-rules_report.md
+- .agents-runtime/MAIL/REVIEWER/IN/T0029_20260419-0439_REVIEWER_review-rule-layer-cleanup-from-t0028.md
+- .agents-runtime/MAIL/REVIEWER/OUT/T0029_20260419-0439_REVIEWER_review-rule-layer-cleanup-from-t0028_report.md
+- .agents-runtime/MAIL/ANALYST/IN/T0030_20260419-0448_ANALYST_assess-ticket-and-report-heading-format.md
+- .agents-runtime/MAIL/ANALYST/OUT/T0030_20260419-0448_ANALYST_assess-ticket-and-report-heading-format_report.md
