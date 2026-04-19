@@ -1,8 +1,8 @@
-# TASK — formal ticket
+# <TicketId> — <Human Title>
 
 Role: <ROLE>
 TicketId: <TXXXX>
-Title: <short-title>
+Title: <slug-based-short-title>
 CreatedAt: <YYYY-MM-DD HH:MM>
 OwnerRequest: <кратко в 1-3 строках>
 PlanRef: <optional path to .agents-runtime/PLANS/...>

@@ -15,10 +15,12 @@
 ## Шаблон
 
 ```md
-# VERIFY REPORT
+# <TicketId> — <Human Title>
 
 Verdict: `<PASS | FAIL | INCONCLUSIVE>`
 CreatedAt: `<DD.MM.YYYY HH:mm>`
+TicketId: `<TXXXX>`
+Title: `<slug-based-short-title>`
 SourceTicket: `<.agents-runtime/MAIL/<ROLE>/IN/...md | direct-owner-request>`
 Workspace: `D:\.DEV\JetBrainsPlagins`
 

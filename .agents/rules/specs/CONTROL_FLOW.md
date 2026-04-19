@@ -60,6 +60,11 @@
 - Роль не редактирует `00_STATE.md`.
 - Если нужна рекомендация по state change, её нужно зафиксировать только в собственном `OUT` или в чате.
 
+## Формат heading и Title в formal MAIL
+
+- Для formal `MAIL/<ROLE>/IN/*.md` и `MAIL/<ROLE>/OUT/*_report.md` первый H1 должен быть в формате `# <TicketId> — <Human Title>`.
+- Поле `Title:` в formal `IN`/`OUT` остаётся machine-stable slug-based и не заменяет человекочитаемый H1.
+
 ## Открытие ключевых процессных markdown-артефактов
 
 - При каждом создании или изменении формального тикета `MAIL/<ROLE>/IN/*.md` агент обязан открыть этот файл через `Start-Process`.
