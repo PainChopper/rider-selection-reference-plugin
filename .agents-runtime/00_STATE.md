@@ -1,6 +1,6 @@
 # 00_STATE — process state
 
-NextTicket: T0024
+NextTicket: T0028
 
 ## Active
 - none
@@ -53,3 +53,11 @@ NextTicket: T0024
 - .agents-runtime/MAIL/CODER/OUT/T0022_20260418-2321_CODER_define-staging-rules-for-new-project-and-process-files_report.md
 - .agents-runtime/MAIL/CODER/IN/T0023_20260418-2353_CODER_define-one-run-role-override-rule.md
 - .agents-runtime/MAIL/CODER/OUT/T0023_20260418-2353_CODER_define-one-run-role-override-rule_report.md
+- .agents-runtime/MAIL/CODER/IN/T0024_20260419-0010_CODER_define-commit-message-suggestion-rule-for-coder-and-tester.md
+- .agents-runtime/MAIL/CODER/OUT/T0024_20260419-0010_CODER_define-commit-message-suggestion-rule-for-coder-and-tester_report.md
+- .agents-runtime/MAIL/CODER/IN/T0025_20260419-0102_CODER_define-build-test-and-fix-flow-after-project-file-changes.md
+- .agents-runtime/MAIL/CODER/OUT/T0025_20260419-0102_CODER_define-build-test-and-fix-flow-after-project-file-changes_report.md
+- .agents-runtime/MAIL/ANALYST/IN/T0026_20260419-0124_ANALYST_specify-icon-for-copy-selection-action.md
+- .agents-runtime/MAIL/ANALYST/OUT/T0026_20260419-0124_ANALYST_specify-icon-for-copy-selection-action_report.md
+- .agents-runtime/MAIL/CODER/IN/T0027_20260419-0147_CODER_add-action-icon-from-owner-svg.md
+- .agents-runtime/MAIL/CODER/OUT/T0027_20260419-0147_CODER_add-action-icon-from-owner-svg_report.md
