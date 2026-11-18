@@ -29,18 +29,18 @@ repositories {
 
 dependencies {
     intellijPlatform {
-        rider(providers.gradleProperty("platformVersion")) {
-            useInstaller = false
-        }
+        intellijIdea(providers.gradleProperty("platformVersion"))
     }
 }
 
 intellijPlatform {
+    buildSearchableOptions = false
+
     pluginConfiguration {
         version.set(providers.gradleProperty("pluginVersion"))
         ideaVersion {
             sinceBuild.set("261")
-            untilBuild.set("261.*")
+            untilBuild.set("263.*")
         }
     }
 }

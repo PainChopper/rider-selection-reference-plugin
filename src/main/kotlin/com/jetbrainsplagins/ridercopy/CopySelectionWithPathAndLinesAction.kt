@@ -97,71 +97,25 @@ class CopySelectionWithPathAndLinesAction : AnAction() {
         val lineStart = document.getLineNumber(context.selectionStartOffset) + 1
         val lastIncludedOffset = context.selectionEndOffset - 1
         val lineEnd = document.getLineNumber(lastIncludedOffset) + 1
-        val normalizedSelectedText = normalizeText(context.selectedText)
         val language = detectLanguage(project, virtualFile)
 
-        return buildString {
-            append("[FILE] ").append(relativePath).append('\n')
-            append("[LINES] ").append(lineStart).append('-').append(lineEnd).append('\n')
-            append("[LANG] ").append(language).append('\n')
-            append("[CODE]").append('\n')
-            append(normalizedSelectedText).append('\n')
-            append("[/CODE]")
-        }
+        return MarkdownClipboardFormatter.formatEditorContext(
+            filePath = relativePath,
+            lineStart = lineStart,
+            lineEnd = lineEnd,
+            languageTag = language,
+            body = context.selectedText
+        )
     }
 
-    private fun detectLanguage(project: Project, virtualFile: VirtualFile): String {
+    private fun detectLanguage(project: Project, virtualFile: VirtualFile): String? {
         val psiFile = PsiManager.getInstance(project).findFile(virtualFile)
-        val ideLanguage = normalizeLangToken(psiFile?.language?.id)
-        if (ideLanguage != null) {
-            return ideLanguage
+        val ideLanguageId = psiFile?.language?.id
+        if (!ideLanguageId.isNullOrBlank()) {
+            return MarkdownClipboardFormatter.normalizeLanguageTag(ideLanguageId)
         }
 
-        val ideFileType = normalizeLangToken(virtualFile.fileType.name)
-        if (ideFileType != null) {
-            return ideFileType
-        }
-
-        return "text"
-    }
-
-    private fun normalizeLangToken(raw: String?): String? {
-        if (raw.isNullOrBlank()) {
-            return null
-        }
-
-        val normalized = raw
-            .trim()
-            .lowercase(Locale.ROOT)
-            .replace(Regex("[^a-z0-9]+"), "_")
-            .trim('_')
-
-        if (normalized.isEmpty()) {
-            return null
-        }
-
-        if (normalized == "text" || normalized == "plaintext" || normalized == "plain_text") {
-            return "text"
-        }
-
-        val rawLower = raw.trim().lowercase(Locale.ROOT)
-        if ((normalized == "c" || normalized == "c_sharp" || normalized == "csharp") &&
-            (rawLower.contains("#") || rawLower.contains("sharp"))
-        ) {
-            return "csharp"
-        }
-
-        if ((normalized == "f" || normalized == "f_sharp" || normalized == "fsharp") &&
-            (rawLower.contains("#") || rawLower.contains("sharp"))
-        ) {
-            return "fsharp"
-        }
-
-        if (normalized == "c" && rawLower.contains("++")) {
-            return "cpp"
-        }
-
-        return normalized
+        return MarkdownClipboardFormatter.normalizeLanguageTag(virtualFile.fileType.name)
     }
 
     private fun isDiffEditor(editor: Editor): Boolean {
@@ -224,21 +178,11 @@ class CopySelectionWithPathAndLinesAction : AnAction() {
             diffContext = diffContext
         )
 
-        val normalizedBody = diffLines
-            .joinToString("\n")
-            .replace("\r\n", "\n")
-            .replace('\r', '\n')
-
-        return buildString {
-            append("[DIFF_FILE] ").append(diffFileLabel).append('\n')
-            append("[DIFF_RANGE] ").append(selectedStartLine + 1).append('-').append(selectedEndLine + 1).append('\n')
-            append("[LANG] diff").append('\n')
-            append("[DIFF_FILE_LANG] ").append(diffFileLanguage).append('\n')
-            append("[DIFF_FORMAT] unified").append('\n')
-            append("[DIFF]").append('\n')
-            append(normalizedBody).append('\n')
-            append("[/DIFF]")
-        }
+        return MarkdownClipboardFormatter.formatDiffContext(
+            fileLabel = diffFileLabel,
+            fileLanguageTag = diffFileLanguage,
+            body = diffLines.joinToString("\n")
+        )
     }
 
     private fun resolveDiffApiContext(e: AnActionEvent, editor: Editor): DiffApiContext? {
@@ -381,14 +325,14 @@ class CopySelectionWithPathAndLinesAction : AnAction() {
         project: Project?,
         virtualFile: VirtualFile?,
         diffContext: DiffApiContext
-    ): String {
-        val resolvedFile = resolveDiffVirtualFile(virtualFile, diffContext) ?: return "text"
+    ): String? {
+        val resolvedFile = resolveDiffVirtualFile(virtualFile, diffContext) ?: return null
 
         if (project != null) {
             return detectLanguage(project, resolvedFile)
         }
 
-        return normalizeLangToken(resolvedFile.fileType.name) ?: "text"
+        return MarkdownClipboardFormatter.normalizeLanguageTag(resolvedFile.fileType.name)
     }
 
     private fun resolveDiffVirtualFile(virtualFile: VirtualFile?, diffContext: DiffApiContext): VirtualFile? {
